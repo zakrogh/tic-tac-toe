@@ -10,7 +10,8 @@ Player.prototype.getMark = function (){
 function Space(x, y) {
   this.x = parseInt(x);
   this.y = parseInt(y);
-  this.marked = "";
+  this.marked = x + "_" + y;
+  this.hasBeenMarked = false;
 }
 Space.prototype.xCoordinate = function(){
   return this.x;
@@ -46,6 +47,23 @@ function Game(board, p1, p2) {
   this.player1 = p1;
   this.player2 = p2;
 }
+
+Game.prototype.checkVictoryState = function(){
+  if((this.board.spaces[0].markedBy() === this.board.spaces[1].markedBy() && this.board.spaces[1].markedBy() === this.board.spaces[2].markedBy())
+  || (this.board.spaces[3].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[5].markedBy())
+  || (this.board.spaces[6].markedBy() === this.board.spaces[7].markedBy() && this.board.spaces[7].markedBy() === this.board.spaces[8].markedBy())
+  || (this.board.spaces[0].markedBy() === this.board.spaces[3].markedBy() && this.board.spaces[3].markedBy() === this.board.spaces[6].markedBy())
+  || (this.board.spaces[1].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[7].markedBy())
+  || (this.board.spaces[2].markedBy() === this.board.spaces[5].markedBy() && this.board.spaces[5].markedBy() === this.board.spaces[8].markedBy())
+  || (this.board.spaces[0].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[8].markedBy())
+  || (this.board.spaces[6].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[3].markedBy())){
+    return true;
+  }
+  else{
+    return false;
+  }
+}
+
 //Business Logic
 var currentPlayer = new Player();
 
@@ -61,34 +79,46 @@ var newGame = function(){
   let newGame = new Game(TheBoard, Player1, Player2);
   return newGame;
 }
+
+//Clickspace drives the game loop
 var clickSpace = function(ActiveGame, x, y){
   let thisSpace = ActiveGame.board.find(x,y);
-  if(!thisSpace.markedBy()){
+  if(!thisSpace.hasBeenMarked){
     markSpace(ActiveGame, x, y);
+    switchPlayer(ActiveGame);
+    isGameOver(ActiveGame);
+    console.log(ActiveGame);
   }
 }
 var markSpace = function (ActiveGame, x, y){
   let thisSpace = ActiveGame.board.find(x,y);
   thisSpace.marked = currentPlayer.getMark();
-  console.log(thisSpace);
+  thisSpace.hasBeenMarked = true;
 }
-var isGameOver = function(){
-
+var switchPlayer = function(ActiveGame){
+  if(currentPlayer.getMark() === ActiveGame.player1.getMark()){
+    currentPlayer = ActiveGame.player2;
+  }else{
+    currentPlayer = ActiveGame.player1;
+  }
+}
+var isGameOver = function(ActiveGame){
+  if(ActiveGame.checkVictoryState()){
+    console.log(true);
+  }
 }
 //Front End
 var clearBoard = function(){
   $(".well").text("");
 }
 $(document).ready(function(){
-  var ActiveGame = newGame();
+  let ActiveGame = newGame();
   currentPlayer = ActiveGame.player1;
   $("#button").click(function(){
     clearBoard();
     ActiveGame = newGame();
-    console.log(ActiveGame);
   });
   $(".well").click(function(){
     clickSpace(ActiveGame, this.id.slice(0,1), this.id.slice(2,3));
   });
-  console.log(ActiveGame);
 });
