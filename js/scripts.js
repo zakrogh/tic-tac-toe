@@ -47,7 +47,7 @@ function Game(board, p1, p2) {
   this.player1 = p1;
   this.player2 = p2;
 }
-
+//there are 8 victory states, 3 across, 3 down, 2 diagonals
 Game.prototype.checkVictoryState = function(){
   if((this.board.spaces[0].markedBy() === this.board.spaces[1].markedBy() && this.board.spaces[1].markedBy() === this.board.spaces[2].markedBy())
   || (this.board.spaces[3].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[5].markedBy())
@@ -68,8 +68,8 @@ Game.prototype.checkVictoryState = function(){
 var currentPlayer = new Player();
 
 var newGame = function(){
-  var Player1 = new Player("X");
-  var Player2 = new Player("Y");
+  var Player1 = new Player("x");
+  var Player2 = new Player("o");
   var TheBoard = new Board();
   for(let i  = 1; i < 4; i++){
     for(let j = 1; j < 4; j++){
@@ -85,8 +85,8 @@ var clickSpace = function(ActiveGame, x, y){
   let thisSpace = ActiveGame.board.find(x,y);
   if(!thisSpace.hasBeenMarked){
     markSpace(ActiveGame, x, y);
-    switchPlayer(ActiveGame);
     isGameOver(ActiveGame);
+    switchPlayer(ActiveGame);
     console.log(ActiveGame);
   }
 }
@@ -94,6 +94,7 @@ var markSpace = function (ActiveGame, x, y){
   let thisSpace = ActiveGame.board.find(x,y);
   thisSpace.marked = currentPlayer.getMark();
   thisSpace.hasBeenMarked = true;
+  $("#" + x + "_" + y).append('<img src="img/' + currentPlayer.getMark() + '.png">');
 }
 var switchPlayer = function(ActiveGame){
   if(currentPlayer.getMark() === ActiveGame.player1.getMark()){
@@ -104,7 +105,7 @@ var switchPlayer = function(ActiveGame){
 }
 var isGameOver = function(ActiveGame){
   if(ActiveGame.checkVictoryState()){
-    console.log(true);
+    alert(currentPlayer.getMark().toUpperCase() + " wins");
   }
 }
 //Front End
