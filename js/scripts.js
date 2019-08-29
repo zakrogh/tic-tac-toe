@@ -1,3 +1,9 @@
+/* Zach Krogh
+* 2 Player mode - working
+* vs easy ai - working
+* vs hard ai - NOT WORKING
+*/
+
 //Player Logic
 function Player(mark) {
   this.mark = mark;
