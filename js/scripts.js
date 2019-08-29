@@ -46,6 +46,9 @@ function Game(board, p1, p2) {
   this.board = board;
   this.player1 = p1;
   this.player2 = p2;
+  this.isOver = false;
+  this.easyai = false;
+  this.hardai = false;
 }
 //there are 8 victory states, 3 across, 3 down, 2 diagonals
 Game.prototype.checkVictoryState = function(){
@@ -56,12 +59,20 @@ Game.prototype.checkVictoryState = function(){
   || (this.board.spaces[1].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[7].markedBy())
   || (this.board.spaces[2].markedBy() === this.board.spaces[5].markedBy() && this.board.spaces[5].markedBy() === this.board.spaces[8].markedBy())
   || (this.board.spaces[0].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[8].markedBy())
-  || (this.board.spaces[6].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[3].markedBy())){
+  || (this.board.spaces[6].markedBy() === this.board.spaces[4].markedBy() && this.board.spaces[4].markedBy() === this.board.spaces[2].markedBy())){
     return true;
   }
   else{
     return false;
   }
+}
+Game.prototype.checkStaleMate = function(){
+  for(let i = 0; i < this.board.spaces.length;i++){
+    if(this.board.spaces[i].hasBeenMarked === false){
+      return false;
+    }
+  }
+  return true;
 }
 
 //Business Logic
@@ -70,6 +81,7 @@ var currentPlayer = new Player();
 var newGame = function(){
   var Player1 = new Player("x");
   var Player2 = new Player("o");
+  currentPlayer = Player1;
   var TheBoard = new Board();
   for(let i  = 1; i < 4; i++){
     for(let j = 1; j < 4; j++){
@@ -86,7 +98,10 @@ var clickSpace = function(ActiveGame, x, y){
   if(!thisSpace.hasBeenMarked){
     markSpace(ActiveGame, x, y);
     isGameOver(ActiveGame);
-    switchPlayer(ActiveGame);
+    if(!ActiveGame.isOver){
+      switchPlayer(ActiveGame);
+    }
+
     console.log(ActiveGame);
   }
 }
@@ -99,25 +114,62 @@ var markSpace = function (ActiveGame, x, y){
 var switchPlayer = function(ActiveGame){
   if(currentPlayer.getMark() === ActiveGame.player1.getMark()){
     currentPlayer = ActiveGame.player2;
+    if(ActiveGame.easyai === true){
+      easyAITurn(ActiveGame);
+    }else if(ActiveGame.hardai === true){
+      //hard ai stuff
+    }
   }else{
     currentPlayer = ActiveGame.player1;
   }
 }
 var isGameOver = function(ActiveGame){
   if(ActiveGame.checkVictoryState()){
-    alert(currentPlayer.getMark().toUpperCase() + " wins");
+    $(".victory").text(currentPlayer.getMark().toUpperCase() + " Wins!");
+    ActiveGame.isOver = true;
+  }else if(ActiveGame.checkStaleMate()){
+    $(".victory").text("Stalemate! Nobody Wins!");
+    ActiveGame.isOver = true;
   }
+
 }
+//EasyAI stuff
+var easyAITurn = function(ActiveGame){
+  let emptySpaces = [];
+  for(let i = 0; i < ActiveGame.board.spaces.length; i++){
+    if(!ActiveGame.board.spaces[i].hasBeenMarked){
+      emptySpaces.push(ActiveGame.board.spaces[i]);
+    }
+  }
+  let space = emptySpaces[Math.floor(Math.random() * emptySpaces.length)];
+  clickSpace(ActiveGame, space.xCoordinate(), space.yCoordinate());
+}
+
+var hardAITurn = function(ActiveGame){
+  
+}
+
 //Front End
 var clearBoard = function(){
   $(".well").text("");
+  $(".victory").text("");
 }
 $(document).ready(function(){
   let ActiveGame = newGame();
   currentPlayer = ActiveGame.player1;
-  $("#button").click(function(){
+  $("#2players").click(function(){
+    ActiveGame.easyai = false;
+    ActiveGame.hardai = false;
     clearBoard();
     ActiveGame = newGame();
+  });
+  $("#easyai").click(function(){
+    clearBoard();
+    ActiveGame = newGame();
+    ActiveGame.easyai = true;
+  });
+  $("#hardai").click(function(){
+
   });
   $(".well").click(function(){
     clickSpace(ActiveGame, this.id.slice(0,1), this.id.slice(2,3));
