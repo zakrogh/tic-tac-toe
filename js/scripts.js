@@ -6,6 +6,7 @@ function Player(mark) {
 Player.prototype.getMark = function (){
   return this.mark
 }
+
 //Space Logic
 function Space(x, y) {
   this.x = parseInt(x);
@@ -29,7 +30,7 @@ Space.prototype.mark = function(player){
 //Board Logic
 function Board() {
   this.spaces = [];
-
+  this.layout = [[0,0,0],[0,0,0],[0,0,0]];
 }
 Board.prototype.find = function (x, y){
   x = parseInt(x);
@@ -81,7 +82,6 @@ var currentPlayer = new Player();
 var newGame = function(){
   var Player1 = new Player("x");
   var Player2 = new Player("o");
-  currentPlayer = Player1;
   var TheBoard = new Board();
   for(let i  = 1; i < 4; i++){
     for(let j = 1; j < 4; j++){
@@ -101,18 +101,22 @@ var clickSpace = function(ActiveGame, x, y){
     if(!ActiveGame.isOver){
       switchPlayer(ActiveGame);
     }
-
-    console.log(ActiveGame);
   }
 }
 var markSpace = function (ActiveGame, x, y){
   let thisSpace = ActiveGame.board.find(x,y);
   thisSpace.marked = currentPlayer.getMark();
+  if(currentPlayer === ActiveGame.player1){
+    ActiveGame.board.layout[y-1][x-1] = 1;
+  }else{
+    ActiveGame.board.layout[y-1][x-1] = 5;
+  }
   thisSpace.hasBeenMarked = true;
+  console.log(ActiveGame.board.layout);
   $("#" + x + "_" + y).append('<img src="img/' + currentPlayer.getMark() + '.png">');
 }
 var switchPlayer = function(ActiveGame){
-  if(currentPlayer.getMark() === ActiveGame.player1.getMark()){
+  if(currentPlayer === ActiveGame.player1){
     currentPlayer = ActiveGame.player2;
     if(ActiveGame.easyai === true){
       easyAITurn(ActiveGame);
@@ -144,9 +148,109 @@ var easyAITurn = function(ActiveGame){
   let space = emptySpaces[Math.floor(Math.random() * emptySpaces.length)];
   clickSpace(ActiveGame, space.xCoordinate(), space.yCoordinate());
 }
+/*  There are 8 scenarios for the hard ai to look for:
+* 1: Win - can it win the game this move
+* 2: Block - will the opponent win in their next move? if so block it
+* 3: Fork - Create a fork so it has 2 ways to win
+* 4: Block Fork - Block possible forks from the opponent
+* 5: Center - take center space if available
+* 6: Opposite corner - If the opponent is in the corner, the player plays the opposite corner.
+* 7: Empty Corner - Take any empty corner
+* 8: Empty Side - Take a middle square on any side
+*/
+//hard ai code starts here
+var aiCheckForWin = function(ActiveGame){
+  //check all 8 win scenarios I guess?
+  let board = ActiveGame.board.layout;
+  if(board[0][0] + board[0][1] + board[0][2] === 10){
+    if(board[0][0] === 0)
+      clickSpace(ActiveGame, 1, 1);
+    if(board[0][1] === 0)
+      clickSpace(ActiveGame, 1, 2);
+    if(board[0][2] === 0)
+      clickSpace(ActiveGame, 1, 3);
+  }
+  if(board[1][0] + board[1][1] + board[1][2] === 10){
+    if(board[1][0] === 0)
+      clickSpace(ActiveGame, 2, 1);
+    if(board[1][1] === 0)
+      clickSpace(ActiveGame, 2, 2);
+    if(board[1][2] === 0)
+      clickSpace(ActiveGame, 2, 3);
+  }
+  if(board[2][0] + board[2][1] + board[2][2] === 10){
+    if(board[2][0] === 0)
+      clickSpace(ActiveGame, 3, 1);
+    if(board[2][1] === 0)
+      clickSpace(ActiveGame, 3, 2);
+    if(board[2][2] === 0)
+      clickSpace(ActiveGame, 3, 3);
+  }
+  if(board[0][0] + board[1][0] + board[2][0] === 10){
+    if(board[0][0] === 0)
+      clickSpace(ActiveGame, 1, 1);
+    if(board[1][0] === 0)
+      clickSpace(ActiveGame, 2, 1);
+    if(board[2][0] === 0)
+      clickSpace(ActiveGame, 3, 1);
+  }
+  if(board[0][1] + board[1][1] + board[2][1] === 10){
+    if(board[0][1] === 0)
+      clickSpace(ActiveGame, 1, 2);
+    if(board[1][1] === 0)
+      clickSpace(ActiveGame, 2, 2);
+    if(board[2][1] === 0)
+      clickSpace(ActiveGame, 3, 2);
+  }
+  if(board[0][2] + board[1][2] + board[2][2] === 10){
+    if(board[0][2] === 0)
+      clickSpace(ActiveGame, 1, 3);
+    if(board[1][2] === 0)
+      clickSpace(ActiveGame, 2, 3);
+    if(board[2][2] === 0)
+      clickSpace(ActiveGame, 3, 3);
+  }
+  if(board[0][0] + board[1][1] + board[2][2] === 10){
+    if(board[0][0] === 0)
+      clickSpace(ActiveGame, 1, 1);
+    if(board[1][1] === 0)
+      clickSpace(ActiveGame, 2, 2);
+    if(board[2][2] === 0)
+      clickSpace(ActiveGame, 3, 3);
+  }
+  if(board[0][2] + board[1][1] + board[2][0] === 10){
+    if(board[0][2] === 0)
+      clickSpace(ActiveGame, 1, 3);
+    if(board[1][1] === 0)
+      clickSpace(ActiveGame, 2, 2);
+    if(board[2][0] === 0)
+      clickSpace(ActiveGame, 3, 1);
+  }
 
+}
+var aiCheckForBlock = function(ActiveGame){
+
+}
+var aiCreateFork = function(ActiveGame){
+
+}
+var aiBlockFork = function(ActiveGame){
+
+}
+var aiCheckCenter = function(ActiveGame){
+
+}
+var aiOppositeCorner = function(ActiveGame){
+
+}
+var aiEmptyCorner = function(ActiveGame){
+
+}
+var aiEmptySide = function(ActiveGame){
+
+}
 var hardAITurn = function(ActiveGame){
-  
+
 }
 
 //Front End
@@ -156,17 +260,19 @@ var clearBoard = function(){
 }
 $(document).ready(function(){
   let ActiveGame = newGame();
-  currentPlayer = ActiveGame.player1;
   $("#2players").click(function(){
-    ActiveGame.easyai = false;
-    ActiveGame.hardai = false;
     clearBoard();
     ActiveGame = newGame();
+    ActiveGame.easyai = false;
+    ActiveGame.hardai = false;
+    currentPlayer = ActiveGame.player1;
   });
   $("#easyai").click(function(){
     clearBoard();
     ActiveGame = newGame();
     ActiveGame.easyai = true;
+    ActiveGame.hardai = false;
+    currentPlayer = ActiveGame.player1;
   });
   $("#hardai").click(function(){
 
